@@ -14,6 +14,8 @@ import (
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go bpf kprobe.c -- -I./headers
 
+const mapKey uint32 = 0
+
 func main() {
 	// Name of the kernel function to trace.
 	fn := "sys_execve"
@@ -47,4 +49,11 @@ func main() {
 
 	log.Println("Waiting for events..")
 	time.Sleep(time.Second * 15)
+	for range ticker.C {
+		var value uint64
+		if err := objs.KprobeMap.Lookup(mapKey, &value); err != nil {
+			log.Fatalf("reading map: %v", err)
+		}
+		log.Printf("%s called %d times\n", fn, value)
+	}
 }
