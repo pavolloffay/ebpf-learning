@@ -31,6 +31,9 @@ int hellow_world(void *ctx) {
   }
   __sync_fetch_and_add(valp, 1);
 
+  u64 pid;
+  pid = bpf_get_current_pid_tgid();
+
   u64 uid;
   uid = bpf_get_current_uid_gid() & 0xFFFFFFFF;
   u64 counter = 0;
@@ -38,7 +41,8 @@ int hellow_world(void *ctx) {
   const char fmt_str[] = "Hello, world, from BPF! My PID is %d\n";
   // read the output via
   // sudo cat /sys/kernel/debug/tracing/trace_pipe
-  bpf_trace_printk(fmt_str, sizeof(fmt_str), uid);
+  bpf_trace_printk(fmt_str, sizeof(fmt_str), pid);
+
 
   p = bpf_map_lookup_elem(&userid_count_map, &uid);
   if (p != 0) {
