@@ -220,3 +220,7 @@ int tracepoint__syscalls__sys_enter_open(struct trace_event_raw_sys_enter * ctx)
 
 
 ## References
+
+* eBPF summit 2020 https://www.youtube.com/watch?v=1GSgyvn4N7E
+* https://github.com/iovisor/bcc
+* https://github.com/iovisor/gobpf
