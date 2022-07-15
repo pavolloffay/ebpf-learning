@@ -61,7 +61,8 @@ type bpfProgramSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type bpfMapSpecs struct {
-	KprobeMap *ebpf.MapSpec `ebpf:"kprobe_map"`
+	KprobeMap      *ebpf.MapSpec `ebpf:"kprobe_map"`
+	UseridCountMap *ebpf.MapSpec `ebpf:"userid_count_map"`
 }
 
 // bpfObjects contains all objects after they have been loaded into the kernel.
@@ -83,12 +84,14 @@ func (o *bpfObjects) Close() error {
 //
 // It can be passed to loadBpfObjects or ebpf.CollectionSpec.LoadAndAssign.
 type bpfMaps struct {
-	KprobeMap *ebpf.Map `ebpf:"kprobe_map"`
+	KprobeMap      *ebpf.Map `ebpf:"kprobe_map"`
+	UseridCountMap *ebpf.Map `ebpf:"userid_count_map"`
 }
 
 func (m *bpfMaps) Close() error {
 	return _BpfClose(
 		m.KprobeMap,
+		m.UseridCountMap,
 	)
 }
 

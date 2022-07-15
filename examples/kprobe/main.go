@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -14,12 +15,13 @@ import (
 // $BPF_CLANG and $BPF_CFLAGS are set by the Makefile.
 //go:generate go run github.com/cilium/ebpf/cmd/bpf2go bpf kprobe.c -- -I./headers
 
-const mapKey uint32 = 0
+const (
+	mapKey uint32 = 0
+	// Name of the kernel function to trace.
+	fnName = "sys_clone"
+)
 
 func main() {
-	// Name of the kernel function to trace.
-	fn := "sys_execve"
-
 	// Allow the current process to lock memory for eBPF resources.
 	if err := rlimit.RemoveMemlock(); err != nil {
 		log.Fatal(err)
@@ -36,7 +38,7 @@ func main() {
 	// pre-compiled program. Each time the kernel function enters, the program
 	// will increment the execution counter by 1. The read loop below polls this
 	// map value once per second.
-	kp, err := link.Kprobe(fn, objs.HellowWorld, nil)
+	kp, err := link.Kprobe(fnName, objs.HellowWorld, nil)
 	if err != nil {
 		log.Fatalf("opening kprobe: %s", err)
 	}
@@ -54,6 +56,13 @@ func main() {
 		if err := objs.KprobeMap.Lookup(mapKey, &value); err != nil {
 			log.Fatalf("reading map: %v", err)
 		}
-		log.Printf("%s called %d times\n", fn, value)
+		log.Printf("%s called %d times\n", fnName, value)
+
+		iterator := objs.UseridCountMap.Iterate()
+		var uid int64
+		var count int64
+		for iterator.Next(&uid, &count) {
+			fmt.Printf("uid=%d, count=%d\n", uid, count)
+		}
 	}
 }
